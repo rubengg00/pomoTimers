@@ -1,0 +1,145 @@
+@if (isOpen()) {
+  <div class="settings-backdrop stats-backdrop" (click)="close()">
+    <div class="stats-modal glass-card" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Estadísticas">
+
+      <!-- ── Header ───────────────────────────────────────────── -->
+      <div class="settings-header stats-header">
+        <h3 class="settings-title">Estadísticas</h3>
+        <button class="btn-glass-icon settings-close" (click)="close()" aria-label="Cerrar">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- ── Scrollable body ───────────────────────────────────── -->
+      <div class="stats-body custom-scrollbar">
+
+        @if (!hasData()) {
+          <div class="stats-empty">
+            <span style="font-size: 40px;">🍅</span>
+            <p>Completa tu primer pomodoro para ver estadísticas.</p>
+          </div>
+        }
+
+        @if (hasData()) {
+
+          <!-- ══ Resumen de hoy ══════════════════════════════════ -->
+          <section class="stats-section">
+            <h4 class="stats-section-title">Hoy</h4>
+            <div class="stats-today-grid">
+
+              <div class="stat-card">
+                <span class="stat-value">{{ pomodorosToday() }}</span>
+                <span class="stat-label">Pomodoros</span>
+              </div>
+
+              <div class="stat-card">
+                <span class="stat-value">{{ focusTimeLabel() }}</span>
+                <span class="stat-label">Tiempo de foco</span>
+              </div>
+
+              <div class="stat-card">
+                <span class="stat-value">{{ tasksCompletedToday() }}</span>
+                <span class="stat-label">Tareas completadas</span>
+              </div>
+
+              <div class="stat-card stat-card-accent">
+                <span class="stat-value">{{ streak() }}
+                  @if (streak() > 0) { <span style="font-size:0.6em;">🔥</span> }
+                </span>
+                <span class="stat-label">Racha (días)</span>
+              </div>
+
+            </div>
+          </section>
+
+          <div class="stats-divider"></div>
+
+          <!-- ══ Últimos 7 días ══════════════════════════════════ -->
+          <section class="stats-section">
+            <h4 class="stats-section-title">Últimos 7 días</h4>
+            <div class="chart-outer">
+              @for (day of weeklyChartData(); track day.label + day.isToday) {
+                <div class="chart-col">
+                  <span class="chart-count">{{ day.count > 0 ? day.count : '' }}</span>
+                  <div class="chart-bar-track">
+                    <div
+                      class="chart-bar-fill"
+                      [class.chart-bar-today]="day.isToday"
+                      [style.height.%]="day.heightPct">
+                    </div>
+                  </div>
+                  <span class="chart-day-label" [class.chart-day-today]="day.isToday">
+                    {{ day.label }}
+                  </span>
+                </div>
+              }
+            </div>
+          </section>
+
+          @if (projectStats().length > 0) {
+            <div class="stats-divider"></div>
+
+            <!-- ══ Por proyecto ══════════════════════════════════ -->
+            <section class="stats-section">
+              <h4 class="stats-section-title">Por proyecto</h4>
+              <div class="project-stats-list">
+                @for (ps of projectStats(); track ps.project.id) {
+                  <div class="project-stat-row">
+                    <div class="project-stat-info">
+                      <span class="project-stat-dot" [style.background]="ps.project.color"></span>
+                      <span class="project-stat-name">{{ ps.project.icon }} {{ ps.project.name }}</span>
+                      <span class="project-stat-count">{{ ps.count }} 🍅</span>
+                    </div>
+                    <div class="project-stat-bar-track">
+                      <div class="project-stat-bar-fill"
+                           [style.width.%]="ps.pct"
+                           [style.background]="ps.project.color">
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </section>
+          }
+
+          <div class="stats-divider"></div>
+
+          <!-- ══ Historial reciente ══════════════════════════════ -->
+          <section class="stats-section">
+            <h4 class="stats-section-title">Historial reciente</h4>
+            @if (recentSessions().length === 0) {
+              <p class="t-secondary" style="font-size:13px;">Sin sesiones registradas.</p>
+            } @else {
+              <div class="history-table">
+                <!-- Header -->
+                <div class="history-row history-header">
+                  <span>Fecha</span>
+                  <span>Tipo</span>
+                  <span>Duración</span>
+                  <span style="text-align:center;">Estado</span>
+                </div>
+                @for (s of recentSessions(); track s.id) {
+                  <div class="history-row">
+                    <span class="history-date">{{ formatDate(s.date) }}</span>
+                    <span class="history-type">{{ typeLabel(s.type) }}</span>
+                    <span class="history-dur">{{ durationLabel(s.type) }}</span>
+                    <span class="history-status" style="text-align:center;">
+                      @if (s.completed) {
+                        <span class="history-ok">✓</span>
+                      } @else {
+                        <span class="history-skip">○</span>
+                      }
+                    </span>
+                  </div>
+                }
+              </div>
+            }
+          </section>
+
+        }
+      </div><!-- end stats-body -->
+    </div><!-- end stats-modal -->
+  </div><!-- end backdrop -->
+}

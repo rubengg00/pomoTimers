@@ -1,0 +1,28 @@
+@if (isOpen()) {
+  <div class="settings-backdrop" (click)="close()">
+    <div class="kbd-modal glass-card" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Atajos de teclado">
+
+      <!-- Header -->
+      <div class="settings-header">
+        <h3 class="settings-title">Atajos de teclado</h3>
+        <button class="btn-glass-icon settings-close" (click)="close()" aria-label="Cerrar">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Shortcuts table -->
+      <div class="kbd-table">
+        @for (s of shortcuts; track s.key) {
+          <div class="kbd-row">
+            <kbd class="kbd-key">{{ s.key }}</kbd>
+            <span class="kbd-action">{{ s.label }}</span>
+          </div>
+        }
+      </div>
+
+      <p class="kbd-footer">Los atajos no se activan al escribir en un campo de texto.</p>
+    </div>
+  </div>
+}

@@ -1,0 +1,141 @@
+@if (isOpen()) {
+  <!-- Backdrop -->
+  <div class="settings-backdrop" (click)="close()">
+    <!-- Modal panel -->
+    <div class="settings-modal glass-card" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Configuración del timer">
+
+      <!-- Header -->
+      <div class="settings-header">
+        <h3 class="settings-title">Configuración</h3>
+        <button class="btn-glass-icon settings-close" (click)="close()" aria-label="Cerrar">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Rows -->
+      <div class="settings-rows">
+
+        <!-- Pomodoro -->
+        <div class="setting-row">
+          <label class="setting-label">
+            <span class="setting-icon">🍅</span>
+            Tiempo Pomodoro
+          </label>
+          <div class="setting-control">
+            <input
+              type="range" min="1" max="90" step="1"
+              class="custom-slider"
+              [value]="local().pomodoroTime"
+              (input)="setPomodoroTime($event)"
+            />
+            <input
+              type="number" min="1" max="90"
+              class="setting-number-input"
+              [value]="local().pomodoroTime"
+              (input)="setPomodoroTime($event)"
+            />
+            <span class="setting-unit">min</span>
+          </div>
+        </div>
+
+        <!-- Short break -->
+        <div class="setting-row">
+          <label class="setting-label">
+            <span class="setting-icon">☕</span>
+            Descanso Corto
+          </label>
+          <div class="setting-control">
+            <input
+              type="range" min="1" max="30" step="1"
+              class="custom-slider"
+              [value]="local().shortBreakTime"
+              (input)="setShortBreak($event)"
+            />
+            <input
+              type="number" min="1" max="30"
+              class="setting-number-input"
+              [value]="local().shortBreakTime"
+              (input)="setShortBreak($event)"
+            />
+            <span class="setting-unit">min</span>
+          </div>
+        </div>
+
+        <!-- Long break -->
+        <div class="setting-row">
+          <label class="setting-label">
+            <span class="setting-icon">🌙</span>
+            Descanso Largo
+          </label>
+          <div class="setting-control">
+            <input
+              type="range" min="5" max="60" step="1"
+              class="custom-slider"
+              [value]="local().longBreakTime"
+              (input)="setLongBreak($event)"
+            />
+            <input
+              type="number" min="5" max="60"
+              class="setting-number-input"
+              [value]="local().longBreakTime"
+              (input)="setLongBreak($event)"
+            />
+            <span class="setting-unit">min</span>
+          </div>
+        </div>
+
+        <!-- Pomodoros until long break -->
+        <div class="setting-row">
+          <label class="setting-label">
+            <span class="setting-icon">🔄</span>
+            Pomodoros por ciclo
+          </label>
+          <div class="setting-control">
+            <input
+              type="range" min="2" max="8" step="1"
+              class="custom-slider"
+              [value]="local().pomodorosUntilLongBreak"
+              (input)="setPomodorosUntilLong($event)"
+            />
+            <input
+              type="number" min="2" max="8"
+              class="setting-number-input"
+              [value]="local().pomodorosUntilLongBreak"
+              (input)="setPomodorosUntilLong($event)"
+            />
+            <span class="setting-unit"></span>
+          </div>
+        </div>
+
+        <!-- Completion sound toggle -->
+        <div class="setting-row setting-row-toggle">
+          <label class="setting-label">
+            <span class="setting-icon">🔔</span>
+            Sonido al completar
+          </label>
+          <button
+            class="toggle-switch"
+            [class.toggle-on]="local().enableCompletionSound"
+            (click)="toggleCompletionSound()"
+            [attr.aria-pressed]="local().enableCompletionSound"
+            type="button">
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="settings-actions">
+        <button class="btn-settings-reset" (click)="resetDefaults()">
+          Restaurar defaults
+        </button>
+        <button class="btn-settings-save" (click)="save()">
+          Guardar
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

@@ -1,150 +1,285 @@
-<main
-  class="relative text-white min-h-screen flex flex-col items-center justify-start py-4 sm:py-8 px-2 sm:px-4 antialiased transition-colors duration-1000 gap-4 sm:gap-8"
-  [class]="{
-        'bg-rose-400': timerMode() === 'pomodoro',
-        'bg-cyan-400': timerMode() === 'shortBreak',
-        'bg-indigo-400': timerMode() === 'longBreak'
-      }">
+<!-- Particles background -->
+<app-particles [theme]="theme()"></app-particles>
 
-  <!-- Mute Button -->
-  <button (click)="toggleMute()" title="Activar/Desactivar Sonido"
-    class="absolute top-2 sm:top-4 right-2 sm:right-4 p-2 sm:p-3 rounded-full bg-black/20 hover:bg-black/30 transition-colors duration-300 shadow-lg text-white z-10">
-    @if (isMuted()) {
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-      class="w-5 h-5 sm:w-6 sm:h-6">
-      <path stroke-linecap="round" stroke-linejoin="round"
-        d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6l4.72-4.72a.75.75 0 011.28.531V19.94a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.506-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.757 3.63 8.25 4.51 8.25H6.75z" />
-    </svg>
-    } @else {
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-      class="w-5 h-5 sm:w-6 sm:h-6">
-      <path stroke-linecap="round" stroke-linejoin="round"
-        d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
-    </svg>
-    }
-  </button>
+<!-- Toast notifications -->
+<app-toast></app-toast>
 
-  <!-- Timer Card -->
-  <div
-    class="bg-black/10 backdrop-blur-md rounded-2xl shadow-2xl p-4 sm:p-6 md:p-10 w-full max-w-md text-center border border-white/20">
+<main class="relative min-h-screen flex flex-col items-center justify-start py-10 sm:py-14 px-4 gap-5">
 
-    <!-- Mode Selector -->
-    <div class="flex justify-center bg-black/20 rounded-full p-1 sm:p-1.5 mb-4 sm:mb-6 shadow-inner">
-      <button (click)="selectMode('pomodoro')"
-        [class]="'px-2 sm:px-4 py-1.5 sm:py-2 rounded-full font-semibold transition-colors duration-300 w-1/3 text-xs sm:text-sm md:text-base ' + (timerMode() === 'pomodoro' ? 'bg-white text-rose-500' : 'hover:bg-black/10')">
-        Pomodoro
-      </button>
-      <button (click)="selectMode('shortBreak')"
-        [class]="'px-2 sm:px-4 py-1.5 sm:py-2 rounded-full font-semibold transition-colors duration-300 w-1/3 text-xs sm:text-sm md:text-base ' + (timerMode() === 'shortBreak' ? 'bg-white text-cyan-500' : 'hover:bg-black/10')">
-        Descanso Corto
-      </button>
-      <button (click)="selectMode('longBreak')"
-        [class]="'px-2 sm:px-4 py-1.5 sm:py-2 rounded-full font-semibold transition-colors duration-300 w-1/3 text-xs sm:text-sm md:text-base ' + (timerMode() === 'longBreak' ? 'bg-white text-indigo-500' : 'hover:bg-black/10')">
-        Descanso Largo
-      </button>
+  <!-- ─── Modals ─── -->
+  <app-settings-modal
+    [isOpen]="isSettingsOpen()"
+    [currentConfig]="config()"
+    (configSaved)="onConfigSaved($event)"
+    (modalClosed)="closeSettings()">
+  </app-settings-modal>
+
+  <app-stats-modal
+    [isOpen]="isStatsOpen()"
+    [tasks]="tasks()"
+    [projects]="projects()"
+    [config]="config()"
+    (modalClosed)="closeStats()">
+  </app-stats-modal>
+
+  <app-keyboard-help-modal
+    [isOpen]="isKbdHelpOpen()"
+    (modalClosed)="closeKbdHelp()">
+  </app-keyboard-help-modal>
+
+  <!-- ─── Ambient Sound (fixed bottom-right) ─── -->
+  <app-ambient-sound style="position:fixed; bottom:20px; right:20px; z-index:40;"></app-ambient-sound>
+
+  <!-- ─── Top-right action bar (fixed flex container) ─── -->
+  <div class="top-bar-actions">
+
+    <!-- Settings -->
+    <button (click)="openSettings()" title="Configuración (S)" class="btn-glass-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:18px;height:18px;">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    </button>
+
+    <!-- Stats -->
+    <button (click)="openStats()" title="Estadísticas" class="btn-glass-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:18px;height:18px;">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+      </svg>
+    </button>
+
+    <!-- Keyboard help -->
+    <button (click)="openKbdHelp()" title="Atajos de teclado (?)" class="btn-glass-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:18px;height:18px;">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+      </svg>
+    </button>
+
+    <!-- Mute -->
+    <button (click)="toggleMute()" title="Activar/Desactivar Sonido" class="btn-glass-icon">
+      @if (isMuted()) {
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:18px;height:18px;">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6l4.72-4.72a.75.75 0 011.28.531V19.94a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.506-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.757 3.63 8.25 4.51 8.25H6.75z" />
+        </svg>
+      } @else {
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:18px;height:18px;">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+        </svg>
+      }
+    </button>
+
+    <!-- Theme toggle -->
+    <button
+      (click)="toggleTheme()"
+      [title]="theme() === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+      class="btn-glass-icon">
+      @if (theme() === 'dark') {
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:18px;height:18px;">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+        </svg>
+      } @else {
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:18px;height:18px;">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+        </svg>
+      }
+    </button>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       TIMER CARD
+  ═══════════════════════════════════════════ -->
+  <div class="glass-card fade-in-up w-full max-w-md text-center" style="padding: 28px 28px 28px;">
+
+    <!-- Mode Tabs (centered, full width — settings is in the fixed top bar) -->
+    <div style="display:flex; justify-content:center; margin-bottom:24px;">
+      <div class="tabs-pill">
+        <button (click)="selectMode('pomodoro')"   class="tab-btn" [class.tab-active]="timerMode() === 'pomodoro'">
+          Pomodoro
+        </button>
+        <button (click)="selectMode('shortBreak')" class="tab-btn" [class.tab-active]="timerMode() === 'shortBreak'">
+          <span class="tab-full">Descanso Corto</span>
+          <span class="tab-short">Corto</span>
+        </button>
+        <button (click)="selectMode('longBreak')"  class="tab-btn" [class.tab-active]="timerMode() === 'longBreak'">
+          <span class="tab-full">Descanso Largo</span>
+          <span class="tab-short">Largo</span>
+        </button>
+      </div>
     </div>
 
     <!-- Active Task Display -->
-    <div class="h-10 sm:h-12 mb-2 sm:mb-4 flex flex-col justify-center">
+    <div style="height: 40px; margin-bottom: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
       @if (activeTask(); as task) {
-      <p class="text-white/80 text-xs sm:text-sm">Concentrado en:</p>
-      <p class="font-semibold text-base sm:text-lg text-white truncate px-2 sm:px-4" [title]="task.text">{{ task.text }}
-      </p>
+        <p class="t-secondary" style="font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; margin: 0 0 3px;">Concentrado en</p>
+        <div style="display: flex; align-items: center; gap: 6px; max-width: 100%; padding: 0 24px; cursor: pointer;" (click)="scrollToActiveTask()" title="Ir a la tarea">
+          @if (getProject(task.projectId); as proj) {
+            <span style="width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;" [style.background]="proj.color"></span>
+          }
+          <p class="t-primary active-task-label" style="font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="task.text">{{ task.text }}</p>
+        </div>
       } @else {
-      <p class="text-white/60 text-sm sm:text-base">Selecciona una tarea para empezar</p>
+        <p class="t-secondary" style="font-size: 13px; font-family: 'DM Sans', sans-serif; margin: 0;">Selecciona una tarea para empezar</p>
       }
     </div>
 
-    <!-- Timer Display -->
-    <div class="my-4 sm:my-6">
-      <p class="text-6xl sm:text-8xl md:text-9xl font-bold tracking-tighter text-gray-100">
-        {{ formattedTime() }}
-      </p>
+    <!-- Timer Ring + Display -->
+    <div style="margin: 28px 0; display: flex; justify-content: center;">
+      <div class="timer-ring-container">
+        <svg class="ring-svg" viewBox="0 0 200 200" aria-hidden="true">
+          <defs>
+            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" [attr.stop-color]="ringColorStart()"/>
+              <stop offset="100%" [attr.stop-color]="ringColorEnd()"/>
+            </linearGradient>
+          </defs>
+          <circle class="ring-track" cx="100" cy="100" r="90"/>
+          <circle class="ring-progress" cx="100" cy="100" r="90"
+                  transform="rotate(-90 100 100)"
+                  stroke="url(#ringGrad)"
+                  [class.ring-flash]="ringFlash()"
+                  [attr.stroke-dasharray]="RING_CIRCUMFERENCE"
+                  [attr.stroke-dashoffset]="ringOffset()"/>
+        </svg>
+        <span class="timer-display"
+              [class.timer-pulse]="isRunning()"
+              [class.timer-flip]="timerFlipping()">{{ formattedTime() }}</span>
+      </div>
     </div>
 
     <!-- Controls -->
-    <div class="flex items-center justify-center space-x-2 sm:space-x-4">
-      <button (click)="startPauseTimer()"
-        class="text-xl sm:text-2xl font-bold uppercase tracking-widest text-slate-800 bg-white/90 hover:bg-white py-2 sm:py-4 rounded-lg transition-all duration-300 ease-in-out w-36 sm:w-48 shadow-lg">
-        @if (isRunning()) {
-        <span>PAUSAR</span>
-        } @else {
-        <span>INICIAR</span>
-        }
+    <div class="flex items-center justify-center gap-3" style="margin-bottom: 28px;">
+      <button (click)="startPauseTimer()" class="btn-primary">
+        @if (isRunning()) { PAUSAR } @else { INICIAR }
       </button>
-      <button (click)="resetTimer()" title="Reiniciar Temporizador"
-        class="p-3 sm:p-4 rounded-lg bg-black/20 hover:bg-black/30 transition-colors duration-300 shadow-lg">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-          class="w-5 h-5 sm:w-6 sm:h-6">
+      <button (click)="resetTimer()" class="btn-glass-icon" title="Reiniciar (R)">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:18px;height:18px;">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+        </svg>
+      </button>
+      <!-- Focus mode toggle -->
+      <button (click)="toggleFocusMode()" class="btn-glass-icon"
+              [class.btn-focus-active]="isFocusMode()"
+              title="Modo Foco (F)">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:18px;height:18px;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
         </svg>
       </button>
     </div>
 
     <!-- Pomodoro Counter -->
-    <div class="mt-6 sm:mt-10">
-      <p class="text-sm sm:text-base font-medium text-white/80 tracking-wider">
-        Pomodoros: <span class="font-bold text-lg sm:text-xl text-white">{{ pomodorosCompleted() }}</span>
-      </p>
+    <div class="flex items-center justify-center gap-3">
+      <span class="t-secondary" style="font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;">Pomodoros</span>
+      <div class="flex items-center gap-1.5">
+        @for (dot of [0, 1, 2, 3]; track dot) {
+          <span class="pomo-dot"
+            [class.pomo-dot-filled]="dot < (pomodorosCompleted() === 0 ? 0 : pomodorosCompleted() % config().pomodorosUntilLongBreak === 0 ? config().pomodorosUntilLongBreak : pomodorosCompleted() % config().pomodorosUntilLongBreak)">
+          </span>
+        }
+      </div>
+      <span class="t-primary" style="font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; min-width: 18px; text-align: center;">{{ pomodorosCompleted() }}</span>
     </div>
+
   </div>
 
-  <!-- Task List Card -->
-  <div
-    class="bg-black/10 backdrop-blur-md rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8 w-full max-w-md border border-white/20">
-    <h2 class="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4 text-center">Tareas</h2>
+  <!-- ═══════════════════════════════════════════
+       TASK LIST CARD  (hidden in focus mode)
+  ═══════════════════════════════════════════ -->
+  @if (!isFocusMode()) {
+    <div class="glass-card fade-in-up-delay w-full max-w-md" style="padding: 28px 28px 24px;">
 
-    <!-- Add Task Form -->
-    <form class="flex gap-2 mb-4 sm:mb-6" (submit)="addTask($event)">
-      <input type="text" placeholder="¿En qué estás trabajando?" [value]="newTaskText()"
-        (input)="onNewTaskInput($event)"
-        class="flex-grow bg-black/20 rounded-lg px-3 sm:px-4 py-2 text-sm sm:text-base text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 transition duration-300">
-      <button type="submit"
-        class="bg-white/90 text-slate-800 font-bold px-3 sm:px-4 py-2 rounded-lg hover:bg-white transition-colors duration-300 shadow-lg text-sm sm:text-base">
-        Añadir
-      </button>
-    </form>
+      <h2 style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 600; color: var(--text-primary); margin: 0 0 16px; letter-spacing: 0.02em;">Tareas</h2>
 
-    <!-- Task List -->
-    <ul class="space-y-2 sm:space-y-3 max-h-48 sm:max-h-60 overflow-y-auto pr-1 sm:pr-2">
-      @for (task of tasks(); track task.id) {
-      <li
-        class="flex items-center gap-2 sm:gap-3 bg-black/10 p-2 sm:p-3 rounded-lg transition-all duration-300 text-sm sm:text-base"
-        [class.border-l-4]="activeTaskId() === task.id" [class.border-white]="activeTaskId() === task.id"
-        [class.opacity-60]="task.completed">
-        <input type="checkbox" [id]="'task-' + task.id" [checked]="task.completed"
-          (change)="toggleTaskCompletion(task.id)"
-          class="appearance-none h-4 w-4 sm:h-5 sm:w-5 rounded-md bg-white/20 checked:bg-white/80 shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black/10 focus:ring-white/50">
+      <!-- Add Task Form -->
+      <form (submit)="addTask($event)" style="margin-bottom: 14px;">
+        <div class="flex gap-2">
+          <input
+            id="new-task-input"
+            type="text"
+            placeholder="¿En qué estás trabajando?"
+            [value]="newTaskText()"
+            (input)="onNewTaskInput($event)"
+            class="glass-input flex-1"
+            style="padding: 10px 14px;"
+          />
+          <button type="submit" class="btn-add">Añadir</button>
+        </div>
+        <!-- Project selector -->
+        <div class="flex gap-1.5 items-center" style="margin-top: 10px;">
+          <span class="t-secondary" style="font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; font-family: 'DM Sans', sans-serif;">Proyecto:</span>
+          <button type="button" class="project-dot-selector" [class.project-dot-selector-active]="newTaskProjectId() === null"
+            (click)="setNewTaskProject(null)" title="Sin proyecto" style="background: rgba(255,255,255,0.18);">
+          </button>
+          @for (proj of projects(); track proj.id) {
+            <button type="button" class="project-dot-selector"
+              [class.project-dot-selector-active]="newTaskProjectId() === proj.id"
+              (click)="setNewTaskProject(proj.id)" [title]="proj.name" [style.background]="proj.color">
+            </button>
+          }
+        </div>
+      </form>
 
-        <label [for]="'task-' + task.id" class="flex-grow cursor-pointer text-sm sm:text-base"
-          [class.line-through]="task.completed">
-          {{ task.text }}
-        </label>
+      <!-- Projects Bar -->
+      <app-projects-bar
+        [projects]="projects()"
+        [activeFilter]="activeFilterId()"
+        (filterChanged)="onFilterChanged($event)"
+        (projectCreated)="onProjectCreated($event)"
+        style="display: block; margin-bottom: 12px;">
+      </app-projects-bar>
 
-        @if (!task.completed && activeTaskId() !== task.id) {
-        <button (click)="setActiveTask(task.id)" title="Concentrarse en esta tarea"
-          class="p-1 sm:p-1.5 text-white/70 hover:text-white hover:bg-black/20 rounded-full transition-colors duration-300">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-            class="w-4 h-4 sm:w-5 sm:h-5">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zm-7.518-.267A8.25 8.25 0 1120.25 10.5M8.288 14.212A5.25 5.25 0 1117.25 10.5" />
-          </svg>
-        </button>
+      <!-- Task List -->
+      <ul class="custom-scrollbar space-y-2"
+          style="max-height: 264px; overflow-y: auto; padding-right: 4px; list-style: none; margin: 0; padding-left: 0;">
+
+        @for (task of filteredTasks(); track task.id) {
+          <li [id]="'task-item-' + task.id"
+              class="task-item"
+              [class.task-item-active]="activeTaskId() === task.id"
+              [class.task-item-done]="task.completed">
+            <input type="checkbox" [id]="'task-' + task.id" [checked]="task.completed"
+                   (change)="toggleTaskCompletion(task.id)" class="task-checkbox" />
+            @if (getProject(task.projectId); as proj) {
+              <span class="task-project-dot" [style.background]="proj.color" [title]="proj.name"></span>
+            }
+            <label [for]="'task-' + task.id" class="task-item-label" [class.done]="task.completed">
+              {{ task.text }}
+            </label>
+            @if (!task.completed && activeTaskId() !== task.id) {
+              <button (click)="setActiveTask(task.id)" class="btn-task-icon btn-focus" title="Concentrarse">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zm-7.518-.267A8.25 8.25 0 1120.25 10.5M8.288 14.212A5.25 5.25 0 1117.25 10.5" />
+                </svg>
+              </button>
+            }
+            <button (click)="deleteTask(task.id)" class="btn-task-icon btn-delete" title="Eliminar">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.033-2.134H8.033c-1.12 0-2.033.954-2.033 2.134v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+              </svg>
+            </button>
+          </li>
         }
 
-        <button (click)="deleteTask(task.id)" title="Eliminar tarea"
-          class="p-1 sm:p-1.5 text-white/70 hover:text-white hover:bg-black/20 rounded-full transition-colors duration-300">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-            stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.033-2.134H8.033c-1.12 0-2.033.954-2.033 2.134v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-          </svg>
-        </button>
-      </li>
-      }
-      @if (tasks().length === 0) {
-      <p class="text-center text-white/60 py-3 sm:py-4 text-sm sm:text-base">¡Añade una tarea para empezar!</p>
-      }
-    </ul>
-  </div>
+        @if (filteredTasks().length === 0) {
+          <p class="t-secondary" style="text-align: center; padding: 20px 0; font-size: 13px; font-family: 'DM Sans', sans-serif;">
+            @if (activeFilterId()) { No hay tareas en este proyecto. } @else { ¡Añade una tarea para empezar! }
+          </p>
+        }
+      </ul>
+
+    </div>
+  }
+
+  <!-- Focus mode hint (shown when active) -->
+  @if (isFocusMode()) {
+    <p class="focus-hint">Modo Foco activo — pulsa <kbd>F</kbd> o <kbd>Esc</kbd> para salir</p>
+  }
+
 </main>

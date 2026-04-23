@@ -1,0 +1,85 @@
+<div class="projects-bar-wrapper">
+
+  <!-- Filter pills row -->
+  <div class="projects-pills-row">
+
+    <!-- "Todos" pill -->
+    <button
+      class="project-pill"
+      [class.project-pill-active]="activeFilter() === null"
+      (click)="selectFilter(null)">
+      Todos
+    </button>
+
+    <!-- Project pills -->
+    @for (project of projects(); track project.id) {
+      <button
+        class="project-pill"
+        [class.project-pill-active]="activeFilter() === project.id"
+        [style.--project-color]="project.color"
+        (click)="selectFilter(project.id)">
+        <span class="project-pill-dot" [style.background]="project.color"></span>
+        {{ project.icon }} {{ project.name }}
+      </button>
+    }
+
+    <!-- Add project button -->
+    <button
+      class="project-pill project-pill-add"
+      [class.project-pill-active]="showForm()"
+      (click)="toggleForm()"
+      title="Nuevo proyecto">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width:12px;height:12px;">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+    </button>
+
+  </div>
+
+  <!-- Inline new project form -->
+  @if (showForm()) {
+    <div class="new-project-form">
+
+      <div class="new-project-row">
+        <!-- Icon input -->
+        <input
+          type="text"
+          class="glass-input new-project-icon-input"
+          placeholder="📁"
+          [value]="newIcon()"
+          (input)="onIconInput($event)"
+          maxlength="2"
+        />
+        <!-- Name input -->
+        <input
+          type="text"
+          class="glass-input new-project-name-input"
+          placeholder="Nombre del proyecto"
+          [value]="newName()"
+          (input)="onNameInput($event)"
+          (keydown)="onFormKeydown($event)"
+          autofocus
+        />
+        <!-- Confirm -->
+        <button class="btn-add new-project-confirm" (click)="createProject()">
+          Crear
+        </button>
+      </div>
+
+      <!-- Color swatches -->
+      <div class="color-swatches">
+        @for (color of presetColors; track color) {
+          <button
+            class="color-swatch"
+            [class.color-swatch-active]="newColor() === color"
+            [style.background]="color"
+            (click)="selectColor(color)"
+            [title]="color">
+          </button>
+        }
+      </div>
+
+    </div>
+  }
+
+</div>
