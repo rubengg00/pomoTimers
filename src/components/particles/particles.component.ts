@@ -30,10 +30,15 @@ export class ParticlesComponent implements AfterViewInit, OnDestroy {
   private ctx!: CanvasRenderingContext2D;
   private animId = 0;
   private resizeObserver!: ResizeObserver;
+  private startTimer: ReturnType<typeof setTimeout> | null = null;
 
   ngAfterViewInit(): void {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
+    this.startTimer = setTimeout(() => this.start(), 900);
+  }
+
+  private start(): void {
     const canvas = this.canvasRef.nativeElement;
     this.ctx = canvas.getContext('2d')!;
 
@@ -101,6 +106,7 @@ export class ParticlesComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.startTimer) clearTimeout(this.startTimer);
     cancelAnimationFrame(this.animId);
     this.resizeObserver?.disconnect();
   }

@@ -225,7 +225,7 @@ export class AppComponent implements OnDestroy {
         link.type = 'image/svg+xml';
         document.head.appendChild(link);
       }
-      link.href = 'public/favicon.svg';
+      link.href = '/favicon.svg';
     } catch { /* silently ignore favicon errors */ }
   }
 
@@ -250,7 +250,7 @@ export class AppComponent implements OnDestroy {
   private sendNotification(title: string, body?: string): void {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
     try {
-      new Notification(title, { body, icon: '/public/favicon-96x96.png', silent: true });
+      new Notification(title, { body, icon: '/favicon-96x96.png', silent: true });
     } catch { /* mobile Safari may throw */ }
   }
 
