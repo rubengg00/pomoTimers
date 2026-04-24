@@ -1,0 +1,37 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "pomotimers.com"
+        }
+      ],
+      "destination": "https://www.pomotimers.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/faq",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/help",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/pomo",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/settings",
+      "destination": "/",
+      "permanent": true
+    }
+  ]
+}
