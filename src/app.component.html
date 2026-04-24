@@ -4,7 +4,7 @@
 <!-- Toast notifications -->
 <app-toast></app-toast>
 
-<main class="relative min-h-screen flex flex-col items-center justify-start py-10 sm:py-14 px-4 gap-5">
+<main class="app-shell relative min-h-screen flex flex-col items-center justify-start py-10 sm:py-14 px-4 gap-5">
 
   <!-- ─── Modals ─── -->
   <app-settings-modal
@@ -93,10 +93,12 @@
 
   </div>
 
+  <section class="desktop-workspace">
+
   <!-- ═══════════════════════════════════════════
        TIMER CARD
   ═══════════════════════════════════════════ -->
-  <div class="glass-card fade-in-up w-full max-w-md text-center" style="padding: 28px 28px 28px;">
+  <div class="glass-card fade-in-up w-full max-w-md text-center timer-card" style="padding: 28px 28px 28px;">
 
     <!-- Mode Tabs (centered, full width — settings is in the fixed top bar) -->
     <div style="display:flex; justify-content:center; margin-bottom:24px;">
@@ -193,7 +195,7 @@
        TASK LIST CARD  (hidden in focus mode)
   ═══════════════════════════════════════════ -->
   @if (!isFocusMode()) {
-    <div class="glass-card fade-in-up-delay w-full max-w-md" style="padding: 28px 28px 24px;">
+    <div class="glass-card fade-in-up-delay w-full max-w-md task-card" style="padding: 28px 28px 24px;">
 
       <h2 style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 600; color: var(--text-primary); margin: 0 0 16px; letter-spacing: 0.02em;">Tareas</h2>
 
@@ -281,5 +283,7 @@
   @if (isFocusMode()) {
     <p class="focus-hint">Modo Foco activo — pulsa <kbd>F</kbd> o <kbd>Esc</kbd> para salir</p>
   }
+
+  </section>
 
 </main> 
