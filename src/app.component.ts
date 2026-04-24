@@ -125,6 +125,10 @@ export class AppComponent implements OnDestroy {
   });
 
   constructor() {
+    setTimeout(() => {
+      this.toast.show('¡Bienvenido a PomoTimers! 🍅');
+    }, 350);
+
     // ── Persist on change ──────────────────────────────────────────
     effect(() => { this.storage.saveTasks(this.tasks()); });
     effect(() => { this.storage.saveConfig(this.config()); });
@@ -208,49 +212,19 @@ export class AppComponent implements OnDestroy {
     // Title
     document.title = running ? `${time} — PomoTimers` : '⏸ PomoTimers';
 
-    // Favicon via canvas
+    // Keep the branded transparent favicon instead of replacing it with a
+    // generated canvas icon that can look muddy on dark browser chrome.
     try {
-      const canvas = document.createElement('canvas');
-      canvas.width = 32; canvas.height = 32;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      // Background
-      ctx.beginPath();
-      ctx.arc(16, 16, 15, 0, Math.PI * 2);
-      ctx.fillStyle = running
-        ? (this.timerMode() === 'pomodoro' ? '#7c3aed' : '#0891b2')
-        : '#4b5563';
-      ctx.fill();
-
-      if (running) {
-        // Progress arc
-        const pct = this.timeRemaining() / this.totalDuration();
-        ctx.beginPath();
-        ctx.arc(16, 16, 11, -Math.PI / 2, -Math.PI / 2 + pct * Math.PI * 2);
-        ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-      }
-
-      // Time lines
-      ctx.fillStyle = 'white';
-      ctx.font = 'bold 9px monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(this.padZero(this.minutes()), 16, 11);
-      ctx.fillText(this.padZero(this.seconds()), 16, 22);
-
       let link = document.getElementById('favicon-dynamic') as HTMLLinkElement | null;
       if (!link) {
         link = document.createElement('link');
         link.id = 'favicon-dynamic';
         link.rel = 'icon';
-        link.type = 'image/png';
+        link.type = 'image/svg+xml';
         document.head.appendChild(link);
       }
-      link.href = canvas.toDataURL('image/png');
-    } catch { /* silently ignore canvas errors */ }
+      link.href = 'public/favicon.svg';
+    } catch { /* silently ignore favicon errors */ }
   }
 
   // ── Animation helpers ──────────────────────────────────────────────
