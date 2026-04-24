@@ -21,7 +21,11 @@
             "assets": [
               "src/assets",
               "src/favicon.ico",
-              "public"
+              {
+                "glob": "**/*",
+                "input": "public",
+                "output": "/"
+              }
             ]
           },
           "configurations": {
