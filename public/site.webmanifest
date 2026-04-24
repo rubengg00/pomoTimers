@@ -1,6 +1,6 @@
 {
-  "name": "PomoTimer",
-  "short_name": "PomoTimer",
+  "name": "PomoTimers",
+  "short_name": "PomoTimers",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",

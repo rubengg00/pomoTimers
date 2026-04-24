@@ -1,5 +1,5 @@
 {
-  "name": "Pomodoro Timer",
-  "description": "A minimalist Pomodoro timer to help you focus on your tasks. Features work, short break, and long break intervals with automatic transitions and a session pomodoro counter.",
+  "name": "PomoTimers",
+  "description": "Temporizador Pomodoro online para concentrarte, organizar tareas y proyectos, gestionar descansos y consultar estadísticas de foco.",
   "requestFramePermissions": []
 }

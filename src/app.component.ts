@@ -210,7 +210,9 @@ export class AppComponent implements OnDestroy {
   // ── Browser meta (title + favicon) ────────────────────────────────
   private updateBrowserMeta(running: boolean, time: string): void {
     // Title
-    document.title = running ? `${time} — PomoTimers` : '⏸ PomoTimers';
+    document.title = running
+      ? `${time} — PomoTimers | Temporizador Pomodoro online`
+      : 'PomoTimers | Temporizador Pomodoro online para concentrarte';
 
     // Keep the branded transparent favicon instead of replacing it with a
     // generated canvas icon that can look muddy on dark browser chrome.
